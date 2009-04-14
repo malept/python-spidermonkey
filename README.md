@@ -42,7 +42,7 @@ Debian/Ubuntu:
 
 Gentoo:
 
-    $ sudo apt-get install nspr
+    $ sudo emerge nspr
 
 Alternatively you can build from [source][nspr]. If you choose this route make
 sure that the pkg-config command is on your `$PATH` when running the install
