@@ -37,8 +37,32 @@ Debian/Ubuntu:
     $ sudo apt-get install libnspr4-dev
 
 Alternatively you can build from [source][nspr]. If you choose this route make
-sure that the nspr-config command is on your $PATH when running the install
-commands below.
+sure that the pkg-config command is on your `$PATH` when running the install
+commands below. Additionally, make sure that `$PKG_CONFIG_PATH` is properly
+set.
+
+XULRunner (optional)
+--------------------
+You can optionally build the extension linked to your system's spidermonkey
+library, which is installed with XULRunner. You should be able to grab it from
+your package manager of choice with something like the following:
+
+Mac OS X:
+
+    $ sudo port install xulrunner
+
+Debian/Ubuntu:
+
+    $ sudo apt-get install xulrunner-1.9-dev
+
+Gentoo:
+
+    $ sudo emerge xulrunner
+
+Alternatively you can build from [source][xulrunner]. If you choose this route,
+make sure that the pkg-config command is on your $PATH when running the
+install commands below. Additionally, make sure that `$PKG_CONFIG_PATH` is
+properly set.
 
 Installation
 ============
@@ -53,6 +77,11 @@ Installation
     *OR*
     
     $ sudo python setup.py develop
+
+If you want to build with the system spidermonkey library, replace the build
+command with the following:
+
+    $ python setup.py --system-library build
 
 Having Issues?
 ==============
@@ -117,3 +146,4 @@ Previous Authors
 
 [lh]: http://davisp.lighthouseapp.com/projects/26898-python-spidermonkey/overview
 [nspr]: ftp://ftp.mozilla.org/pub/mozilla.org/nspr/releases
+[xulrunner]: ftp://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases

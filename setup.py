@@ -13,53 +13,74 @@ scripts and functions respectively.  Borrows heavily from Claes Jacobssen's
 Javascript Perl module, in turn based on Mozilla's 'PerlConnect' Perl binding.
 """,
 
+from glob import glob
 import os
 import subprocess as sp
 import sys
+from distutils.dist import Distribution
 import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, Extension
 
-def find_sources(extensions=[".c", ".cpp"]):
-    ret = []
-    for dpath, dnames, fnames in os.walk("./spidermonkey"):
-        for fname in fnames:
-            if os.path.splitext(fname)[1] in extensions:
-                ret.append(os.path.join(dpath, fname))
-    return ret
+use_system_library = '--system-library' in sys.argv
 
-def nspr_config():
-    pipe = sp.Popen("nspr-config --cflags --libs",
+def find_sources(extensions=[".c", ".cpp"]):
+    if use_system_library:
+        return reduce(lambda x, y: x + y,
+                      [glob('spidermonkey/*' + x) for x in extensions])
+    else:
+        sources = []
+        for dpath, dnames, fnames in os.walk('./spidermonkey'):
+            sources += [os.path.join(dpath, f)
+                        for f in fnames
+                        if os.path.splitext(f)[1] in extensions]
+        return sources
+
+def pkg_config(package):
+    pipe = sp.Popen("pkg-config --cflags --libs %s" % package,
                         shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
     (stdout, stderr) = pipe.communicate()
     if pipe.wait() != 0:
-        raise RuntimeError("Failed to get nspr config.")
-    bits = stdout.split()
-    ret = {
+        raise RuntimeError("Failed to get package config flags for '%s'." %
+                           package)
+    flags = {
         "include_dirs": [],
         "library_dirs": [],
         "libraries": [],
         "extra_compile_args": [],
         "extra_link_args": []
     }
-    prfx = {
+    prefixes = {
         "-I": ("include_dirs", 2),
         "-L": ("library_dirs", 2),
         "-l": ("libraries", 2),
         "-Wl": ("extra_link_args", 0)
     }
-    for b in bits:
-        for p in prfx:
-            if b.startswith(p):
-                name, trim = prfx[p]
-                ret[name].append(b[trim:])
-    return ret
+    for flag in stdout.split():
+        for prefix in prefixes:
+            if flag.startswith(prefix):
+                # hack for xulrunner
+                if flag.endswith('/stable'):
+                    flag = flag[:-6] + 'unstable'
+                name, trim = prefixes[prefix]
+                flags[name].append(flag[trim:])
+    return flags
+
+def nspr_config():
+    return pkg_config('nspr')
+
+def js_config(prefix='mozilla'):
+    return pkg_config(prefix + '-js')
 
 def platform_config():
     sysname = os.uname()[0]
     machine = os.uname()[-1]
-   
-    config = nspr_config()
+
+    if use_system_library:
+        config = js_config()
+    else:
+        config = nspr_config()
+        config['include_dirs'].append('spidermonkey/libjs')
     config["include_dirs"].append("spidermonkey/%s-%s" % (sysname, machine))
     config["extra_compile_args"].extend([
         "-DJS_THREADSAFE",
@@ -80,6 +101,9 @@ def platform_config():
         raise RuntimeError("Unknown system name: %s" % sysname)
 
     return config
+
+Distribution.global_options.append(('system-library', None,
+                                    'Use system JS library instead of bundled'))
 
 setup(
     name = "python-spidermonkey",

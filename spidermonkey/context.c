@@ -7,7 +7,7 @@
  */
 
 #include "spidermonkey.h"
-#include "libjs/jsobj.h"
+#include <jsobj.h>
 
 static JSClass
 js_global_class = {
