@@ -21,6 +21,10 @@ Debian/Ubuntu:
 Where X.X is the version of Python you are using. I have not tested
 python-spidermonkey on Py3K so it may be horribly broken there.
 
+Gentoo:
+
+If you have python installed, then the headers should already be installed.
+
 Netscape Portable Runtime (nspr)
 --------------------------------
 
@@ -35,6 +39,10 @@ Mac OS X:
 Debian/Ubuntu:
 
     $ sudo apt-get install libnspr4-dev
+
+Gentoo:
+
+    $ sudo apt-get install nspr
 
 Alternatively you can build from [source][nspr]. If you choose this route make
 sure that the pkg-config command is on your `$PATH` when running the install
