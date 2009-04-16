@@ -65,6 +65,14 @@ def test_array_equality(cx):
     t.eq(cx.execute("[1,2,3];"), [1, 2, 3])
 
 @t.cx()
+def test_array_iter(cx):
+    lst = []
+    arr = cx.execute('[3,2,1]')
+    for item in arr:
+        lst.append(item)
+    t.eq(lst, [3, 2, 1])
+
+@t.cx()
 def test_mapping_equality(cx):
     js = 'var d = {0: 0, "a": 1, 2: "b", "c": "d", "blah": 2.5}; d;'
     py = {0: 0, "a": 1, 2: "b", "c": "d", "blah": 2.5}
