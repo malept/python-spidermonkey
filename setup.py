@@ -54,6 +54,7 @@ def pkg_config(package):
         "-I": ("include_dirs", 2),
         "-L": ("library_dirs", 2),
         "-l": ("libraries", 2),
+        "-D": ("extra_compile_args", 0),
         "-Wl": ("extra_link_args", 0)
     }
     for flag in stdout.split():
@@ -70,7 +71,11 @@ def nspr_config():
     return pkg_config('nspr')
 
 def js_config(prefix='mozilla'):
-    return pkg_config(prefix + '-js')
+    cfg = pkg_config(prefix + '-js')
+    if '-DJS_THREADSAFE' not in cfg['extra_compile_args']:
+        raise RuntimeError('python-spidermonkey requires a threadsafe ' + \
+                           'spidermonkey library to link against.')
+    return cfg
 
 def platform_config():
     sysname = os.uname()[0]
