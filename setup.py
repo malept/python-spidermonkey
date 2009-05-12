@@ -33,11 +33,11 @@ import ez_setup
 ez_setup.use_setuptools()
 from setuptools import setup, Extension
 
-use_system_library = '--system-library' in sys.argv
+USE_SYSTEM_LIBRARY = '--system-library' in sys.argv
 DEBUG = "--debug" in sys.argv
 
 def find_sources(extensions=[".c", ".cpp"]):
-    if use_system_library:
+    if USE_SYSTEM_LIBRARY:
         return reduce(lambda x, y: x + y,
                       [glob('spidermonkey/*' + x) for x in extensions])
     else:
@@ -93,7 +93,7 @@ def platform_config():
     sysname = os.uname()[0]
     machine = os.uname()[-1]
 
-    if use_system_library:
+    if USE_SYSTEM_LIBRARY:
         config = js_config()
     else:
         config = nspr_config()
