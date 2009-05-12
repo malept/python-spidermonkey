@@ -14,6 +14,17 @@ Javascript Perl module, in turn based on Mozilla's 'PerlConnect' Perl binding.
 """,
 
 from glob import glob
+# I haven't the sligthest, but this appears to fix
+# all those EINTR errors. Pulled and adapted for OS X
+# from twisted bug #733
+# 
+# Definitely forgot to comment this out before distribution.
+#
+# import ctypes
+# import signal
+# libc = ctypes.CDLL("libc.dylib")
+# libc.siginterrupt(signal.SIGCHLD, 0)
+
 import os
 import subprocess as sp
 import sys
@@ -23,6 +34,7 @@ ez_setup.use_setuptools()
 from setuptools import setup, Extension
 
 use_system_library = '--system-library' in sys.argv
+DEBUG = "--debug" in sys.argv
 
 def find_sources(extensions=[".c", ".cpp"]):
     if use_system_library:
@@ -93,14 +105,21 @@ def platform_config():
         "-D_BSD_SOURCE",
         "-Wno-strict-prototypes"
     ])
+    if DEBUG:
+        config["extra_compile_args"].extend([
+            "-UNDEBG",
+            "-DDEBUG",
+            "-DJS_PARANOID_REQUEST"
+        ])
 
-    if sysname == "Linux":
+
+    if sysname in ["Linux", "FreeBSD"]:
         config["extra_compile_args"].extend([
             "-DHAVE_VA_COPY",
             "-DVA_COPY=va_copy"
             ])
 
-    if sysname in ["Darwin", "Linux"]:
+    if sysname in ["Darwin", "Linux", "FreeBSD"]:
         config["extra_compile_args"].append("-DXP_UNIX")
     else:
         raise RuntimeError("Unknown system name: %s" % sysname)
@@ -109,10 +128,12 @@ def platform_config():
 
 Distribution.global_options.append(('system-library', None,
                                     'Use system JS library instead of bundled'))
+Distribution.global_options.append(("debug", None,
+                    "Build a DEBUG version of spidermonkey"))
 
 setup(
     name = "python-spidermonkey",
-    version = "0.0.5",
+    version = "0.0.6",
     license = "MIT",
     author = "Paul J. Davis",
     author_email = "paul.joseph.davis@gmail.com",

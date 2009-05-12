@@ -11,12 +11,15 @@
 PyObject*
 Runtime_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 {
-    Runtime* self;
+    Runtime* self = NULL;
+    unsigned int stacksize = 0x2000000; // 32 MiB heap size.
+
+    if(!PyArg_ParseTuple(args, "|I", &stacksize)) goto error;
 
     self = (Runtime*) type->tp_alloc(type, 0);
     if(self == NULL) goto error;
 
-    self->rt = JS_NewRuntime(1000000);
+    self->rt = JS_NewRuntime(stacksize);
     if(self->rt == NULL) goto error;
 
     goto success;
@@ -48,8 +51,18 @@ Runtime_new_context(Runtime* self, PyObject* args, PyObject* kwargs)
 {
     PyObject* cx = NULL;
     PyObject* tpl = NULL;
+    PyObject* global = NULL;
+
+    if(!PyArg_ParseTuple(args, "|O", &global)) goto error;
     
-    tpl = Py_BuildValue("(O)", self);
+    if(global == NULL)
+    {
+        tpl = Py_BuildValue("(O)", self);
+    }
+    else
+    {
+        tpl = Py_BuildValue("(OO)", self, global);
+    }
     if(tpl == NULL) goto error;
     
     cx = PyObject_CallObject((PyObject*) ContextType, tpl);

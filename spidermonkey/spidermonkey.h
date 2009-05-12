@@ -22,10 +22,12 @@
 #include "double.h"
 
 #include "pyobject.h"
+#include "pyiter.h"
 
 #include "jsobject.h"
 #include "jsarray.h"
 #include "jsfunction.h"
+#include "jsiterator.h"
 
 #include "convert.h"
 #include "error.h"
@@ -39,6 +41,7 @@ extern PyTypeObject* ClassType;
 extern PyTypeObject* ObjectType;
 extern PyTypeObject* ArrayType;
 extern PyTypeObject* FunctionType;
+extern PyTypeObject* IteratorType;
 extern PyTypeObject* HashCObjType;
 extern PyObject* JSError;
 
